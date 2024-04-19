@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox Example with Custom Geolocation Button</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            height: 90vh;
+        }
+        #geolocateButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="geolocateButton">Locate Me</div>
+    <div id="map"></div>
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>Column 1</th>
+                <th>Column 2</th>
+                <th>Column 3</th>
+                <!-- Add more headers as needed based on your API response -->
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data rows will be added dynamically -->
+        </tbody>
+    </table>
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1Ijoia3Jha2VuMTIzIiwiYSI6ImNsdHU1M3V3ajFhZjUya21vcGMwNG9ldDQifQ.B5h0r_S1blXJS0mJMgwYIA';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [-74.5, 40],
+            attributionControl: false,
+            zoom: 9
+        });
+        map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        // Add geolocation control
+        var geolocate = new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            trackUserLocation: true
+        });
+        map.addControl(geolocate);
+
+        // Add event listener to custom geolocation button
+        var geolocateButton = document.getElementById('geolocateButton');
+        geolocateButton.addEventListener('click', function() {
+            geolocate.trigger();
+        });
+
+        fetch('http://localhost/map-box-drawingboundary/api/polyapi.php')
+            .then(response => response.json())
+            .then(jsonData => {
+                const tableBody = document.querySelector('#data-table tbody');
+                jsonData.features.forEach(feature => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${feature.properties.id}</td>
+                        <td>${feature.properties.title}</td>
+                        <td>${feature.properties.name}</td>
+                        <!-- Add more cells as needed based on your JSON structure -->
+                    `;
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
+
+    </script>
+</body>
+</html>
