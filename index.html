@@ -168,8 +168,9 @@
         popup = new mapboxgl.Popup();
         
         // Set the HTML content of the popup
+        var form = createForm(title);
         popup.setLngLat(coordinates[0][0])
-          .setHTML('<h3>' + title + '</h3><button onclick="showMoreInfo(\'' + title + '\')">More Info</button>')
+          .setHTML(form.outerHTML) // Use outerHTML to get the HTML content of the form element
           .addTo(map);
       }
 
@@ -195,13 +196,37 @@
         popup = new mapboxgl.Popup();
         
         // Set the HTML content of the popup
+        var form = createForm(name);
         popup.setLngLat(coordinates)
-          .setHTML('<h3>' + name + '</h3><button onclick="showMoreInfo(\'' + name + '\')">More Info</button>')
+          .setHTML(form.outerHTML) // Use outerHTML to get the HTML content of the form element
           .addTo(map);
       }
 
-      function showMoreInfo(title) {
-        console.log("Additional info for: " + title);
+      function createForm(title) {
+        var form = document.createElement('form');
+        form.innerHTML = `
+          <h3>${title}</h3>
+          <label for="status">Status:</label>
+          <select id="status">
+            <option value="completed">Completed</option>
+            <option value="in_progress">In Progress</option>
+            <option value="pending">Pending</option>
+          </select>
+          <br>
+          <label for="flag">Flag:</label>
+          <input type="checkbox" id="flag">
+          <br>
+          <button type="button" onclick="submitForm('${title}')">Submit</button>
+        `;
+        return form;
+      }
+
+      function submitForm(title) {
+        var status = document.getElementById('status').value;
+        var flag = document.getElementById('flag').checked;
+        console.log("Feature: " + title + ", Status: " + status + ", Flag: " + flag);
+        // You can perform further actions with the form data here, like sending it to a server
+        // For now, just log the data to the console
       }
     </script>
   </body>
