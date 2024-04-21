@@ -9,56 +9,99 @@
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v3.1.0/mapbox-gl.css' rel='stylesheet' />
     <style>
         #geolocateButton {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 1;
             font-family: "Roboto", sans-serif;
-            font-weight: 500;
-            font-style: normal;
-            cursor: pointer;
-            color: #e5e5e5;
-            text-decoration: none;
-            padding: 10px;
-            border-radius: 10px;
-            border: solid 1px #000000;
-            background-color: #14213d;
-            padding: 10px;
+            font-size: 14px;
+            padding: 8px;
             border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border: none;
+            background-color: #14213d;
+            color: #e5e5e5;
+            cursor: pointer;
+            margin-left: 10px;
         }
 
         body {
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
 
         #map {
-            position: absolute;
-            top: 0;
-            bottom: 50px;
-            width: 100%;
+            flex: 1;
         }
 
         #endLocationInput {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            background-color: #fff;
+            display: flex;
+            align-items: center;
             padding: 10px;
-            box-sizing: border-box;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .search-container {
+            display: flex;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .search-input {
+            flex: 1;
+            font-family: "Roboto", sans-serif;
+            font-size: 14px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+
+        .end-location-button {
+            font-family: "Roboto", sans-serif;
+            font-size: 14px;
+            padding: 8px;
+            border-radius: 5px;
+            border: none;
+            background-color: #14213d;
+            color: #e5e5e5;
+            cursor: pointer;
+        }
+
+        .suggestions {
+            position: absolute;
+            background-color: white;
+            width: 100%;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            margin-top: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .suggestion-item {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f0f0f0;
         }
     </style>
 </head>
 
 <body>
     <div id='map'></div>
-    <div id="geolocateButton">Locate Me</div>
     <div id='endLocationInput'>
-        <label for='endAddress'>Enter end location address:</label><br>
-        <input type='text' id='endAddress' placeholder='Enter address'><br>
-        <button onclick='setEndLocation()'>Set End Location</button>
+        <div class="search-container">
+            <input type='text' id='endAddress' class="search-input" placeholder='Enter address'>
+            <div class="suggestions" id="suggestionList"></div>
+        </div>
+        <button class="end-location-button" onclick='setEndLocation()'>Set End Location</button>
     </div>
+    <button id="geolocateButton">Locate Me</button>
     <script>
         mapboxgl.accessToken = 'pk.eyJ1Ijoia3Jha2VuMTIzIiwiYSI6ImNsdHU1M3V3ajFhZjUya21vcGMwNG9ldDQifQ.B5h0r_S1blXJS0mJMgwYIA';
         var map = new mapboxgl.Map({
@@ -181,6 +224,43 @@
         var geolocateButton = document.getElementById('geolocateButton');
         geolocateButton.addEventListener('click', function () {
             geolocateControl.trigger();
+        });
+
+        // Function to fetch suggestions from the Geocoding API based on user input
+        function fetchSuggestions(input) {
+            var suggestionsContainer = document.getElementById('suggestionList');
+            suggestionsContainer.innerHTML = ''; // Clear previous suggestions
+
+            var geocodingUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(input) + '.json?access_token=' + mapboxgl.accessToken;
+
+            fetch(geocodingUrl)
+                .then(response => response.json())
+                .then(data => {
+                    data.features.forEach(feature => {
+                        var suggestionItem = document.createElement('div');
+                        suggestionItem.classList.add('suggestion-item');
+                        suggestionItem.textContent = feature.place_name;
+                        suggestionItem.addEventListener('click', function () {
+                            document.getElementById('endAddress').value = feature.place_name;
+                            suggestionsContainer.innerHTML = ''; // Clear suggestions after selection
+                        });
+                        suggestionsContainer.appendChild(suggestionItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching suggestions:', error);
+                });
+        }
+
+        // Add event listener to the search input for fetching suggestions
+        var searchInput = document.getElementById('endAddress');
+        searchInput.addEventListener('input', function () {
+            var inputValue = this.value.trim();
+            if (inputValue.length > 0) {
+                fetchSuggestions(inputValue);
+            } else {
+                document.getElementById('suggestionList').innerHTML = ''; // Clear suggestions when input is empty
+            }
         });
 
     </script>
