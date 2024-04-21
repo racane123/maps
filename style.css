@@ -27,6 +27,7 @@ th {
     font-style: normal;
     font-variation-settings: "wdth" 100;
     border-bottom: solid 1px black;
+    text-transform: uppercase;
 }
 
 tr:not(:nth-child(0)):hover td {
@@ -62,4 +63,34 @@ td {
     background-color: #fca311;
     color: #000000;
 
+}
+
+
+form {
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+    font-size:20px;
+    padding: 10px;
+}
+
+label {
+    color: #333;
+}
+
+select,
+input[type="checkbox"] {
+   
+}
+
+button {
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    cursor: pointer;
+    color: #e5e5e5;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 10px;
+    border: solid 1px #000000;
+    background-color: #14213d;
 }
