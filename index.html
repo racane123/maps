@@ -52,6 +52,7 @@
           <th>ID</th>
           <th>Title</th>
           <th>Name</th>
+          <th>Address</th>
           <th>Action</th>
           <!-- Add more headers as needed based on your API response -->
         </tr>
@@ -122,7 +123,7 @@
         });
       });
 
-      fetch("http://localhost/map-box-drawingboundary/api/polyapi.php")
+      fetch("http://localhost/map-box-drawingboundary/api/getapi.php")
         .then((response) => response.json())
         .then((jsonData) => {
           const tableBody = document.querySelector("#data-table tbody");
@@ -132,6 +133,7 @@
                     <td>${feature.properties.id}</td>
                     <td>${feature.properties.title}</td>
                     <td>${feature.properties.name}</td>  
+                    <td>${feature.properties.address}</td>
                     <td>${
                       feature.geometry.type === "Polygon"
                         ? '<button class="viewButton" onclick="viewPolygon(' +
