@@ -9,40 +9,25 @@
       href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css"
       rel="stylesheet"
     />
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-      }
-
-      table{
-        text-decoration: none;
-      }
-      tr,td{
-        text-align : center;
-
-      }
-      #map {
-        height: 90vh;
-      }
-      #geolocateButton {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 1;
-        background-color: #fff;
-        padding: 10px;
-        border-radius: 5px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
-      }
-      .viewButton {
-        cursor: pointer;
-        color: blue;
-        text-decoration: underline;
-      }
-    </style>
+    <link rel="stylesheet" href="style.css">
   </head>
+  <style>
+    
+  #map {
+    height: 90vh;
+  }
+  #geolocateButton {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1;
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+  }
+  </style>
   <body>
     <div id="geolocateButton">Locate Me</div>
     <div id="map"></div>
