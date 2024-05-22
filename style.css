@@ -28,6 +28,8 @@ th {
     font-variation-settings: "wdth" 100;
     border-bottom: solid 1px black;
     text-transform: uppercase;
+    padding: 10px;
+    margin: 10px;
 }
 
 tr:not(:nth-child(0)):hover td {
@@ -62,6 +64,7 @@ td {
 .viewButton:hover {
     background-color: #fca311;
     color: #000000;
+    box-shadow: 5px 5px 7px rgba(0, 0, 0, 0.6); 
 
 }
 
@@ -69,7 +72,7 @@ td {
 form {
     font-family: "Roboto", sans-serif;
     font-weight: 500;
-    font-size:20px;
+    font-size: 20px;
     padding: 10px;
 }
 
@@ -79,7 +82,11 @@ label {
 
 select,
 input[type="checkbox"] {
-   
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    border: none;
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
 }
 
 button {
@@ -93,4 +100,75 @@ button {
     border-radius: 10px;
     border: solid 1px #000000;
     background-color: #14213d;
+}
+
+#coordinatesContainer {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.formCoords {
+    display: none; /* Hide the form */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(255, 255, 255);
+    position: absolute;
+    min-height: 30%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    border-radius: 10px;
+    border: solid 1px #272727;
+    padding: 20px;
+    width: calc(40%);
+}
+
+.input-field label {
+    font-size: 15px;
+}
+
+.input-field input[type="text"] {
+    padding: 10px;
+    width: 100%;
+}
+
+.input-field input {
+    width: 100%;
+    border-radius: 5px;
+    padding: 3px;
+    border: solid 1px #000000;
+    outline: none;
+}
+
+.input-field button {
+    margin-top: 5px;
+}
+
+.buttons{
+    display: flex;
+    padding: 30px;
+    transform: translate(80%, 20%);
+    
+}
+
+.submitButton{
+    justify-content: space-between;
+}
+
+.submitButton:hover{
+    background-color: #fca311;
+    color: #000000;
+    box-shadow: 5px 5px 7px rgba(0, 0, 0, 0.6); 
+}
+.closeButton{
+    background-color: #444444;
+    border: none;
+    color: #fff;
+}
+.closeButton:hover{
+    background-color: #ffffff;
+    color:black;
+    box-shadow: 5px 5px 7px rgba(0, 0, 0, 0.6); 
 }

@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Mapbox Example with Custom Geolocation Button</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
-    <link
-      href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <style>
+
+<head>
+  <title>Land Surveyer</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<style>
   #map {
     height: 90vh;
   }
+
   #geolocateButton {
     position: absolute;
     top: 10px;
@@ -34,10 +33,13 @@
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
+
   #coordinates {
     position: absolute;
+    display: flex;
+    justify-content: center;
     top: 10px;
-    right: 10px;
+    right: 100px;
     color: #fff;
     background-color: #333;
     padding: 5px 10px;
@@ -45,177 +47,199 @@
     font-size: 14px;
     z-index: 1;
   }
-  </style>
-  <body>
-    <div id="geolocateButton">Locate Me</div>
-    <div id="coordinates"></div>
-    <div id="map"></div>
-    <table id="data-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Title</th>
-          <th>Name</th>
-          <th>Address</th>
-          <th>Action</th>
-          <!-- Add more headers as needed based on your API response -->
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Data rows will be added dynamically -->
-      </tbody>
-    </table>
-    <script>
-      mapboxgl.accessToken =
-        "pk.eyJ1Ijoia3Jha2VuMTIzIiwiYSI6ImNsdHU1M3V3ajFhZjUya21vcGMwNG9ldDQifQ.B5h0r_S1blXJS0mJMgwYIA";
-      var map = new mapboxgl.Map({
-        container: "map",
-        style: "mapbox://styles/mapbox/streets-v11",
-        center: [120.96788000, 14.64953000],
-        attributionControl: false,
-        zoom: 9,
-      });
-      map.addControl(new mapboxgl.NavigationControl(), "top-right");
-      // Add geolocation control
-      var geolocate = new mapboxgl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true,
+</style>
+
+<body>
+  <div id="geolocateButton">Locate Me</div>
+  <div id="coordinates"></div>
+  <div id="map"></div>
+  <table id="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Action</th>
+        <!-- Add more headers as needed based on your API response -->
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Data rows will be added dynamically -->
+    </tbody>
+  </table>
+  <form id="latlongForm" class="formCoords">
+    <h3>coordinates</h3>
+    <h5>A</h5>
+
+    <div class="input-field" id="coordinatesContainer">
+      <input type="text" id="longitude" name="longitude" placeholder="Longitude">
+      <label for="latitude">,</label>
+      <input type="text" id="latitude" name="latitude" placeholder="Latitude">
+    </div>
+    <button type="button" onclick="addCoordinate()">Add Coordinate</button>
+    <div class="input-field">
+      <input type="text" id="title" name="title" placeholder="title">
+    </div>
+    
+    <div class="buttons">
+      <button type="button" class="submitButton" onclick="submitForm()">Submit</button>
+      <button type="button" class="closeButton" onclick="closeForm()">Close</button>
+    </div>
+  </form>
+
+  <script>
+    mapboxgl.accessToken =
+      "pk.eyJ1Ijoia3Jha2VuMTIzIiwiYSI6ImNsdHU1M3V3ajFhZjUya21vcGMwNG9ldDQifQ.B5h0r_S1blXJS0mJMgwYIA";
+    var map = new mapboxgl.Map({
+      container: "map",
+      style: "mapbox://styles/mapbox/streets-v11",
+      center: [120.96788000, 14.64953000],
+      attributionControl: false,
+      zoom: 9,
+    });
+    map.addControl(new mapboxgl.NavigationControl(), "top-right");
+    // Add geolocation control
+    var geolocate = new mapboxgl.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true,
+      },
+      trackUserLocation: true,
+    });
+    map.addControl(geolocate);
+
+    // Keep track of the popup
+    var popup;
+
+    // Add event listener to custom geolocation button
+    var geolocateButton = document.getElementById("geolocateButton");
+    geolocateButton.addEventListener("click", function () {
+      geolocate.trigger();
+    });
+
+    // Add GeoJSON source for selected polygon or point
+    map.on("style.load", function () {
+      map.addSource("selected-feature", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [], // Empty features array initially
         },
-        trackUserLocation: true,
-      });
-      map.addControl(geolocate);
-
-      // Keep track of the popup
-      var popup;
-
-      // Add event listener to custom geolocation button
-      var geolocateButton = document.getElementById("geolocateButton");
-      geolocateButton.addEventListener("click", function () {
-        geolocate.trigger();
       });
 
-      // Add GeoJSON source for selected polygon or point
-      map.on("style.load", function () {
-        map.addSource("selected-feature", {
-          type: "geojson",
-          data: {
-            type: "FeatureCollection",
-            features: [], // Empty features array initially
-          },
-        });
-
-        // Add a layer for polygons
-        map.addLayer({
-          id: "selected-polygon-layer",
-          type: "fill",
-          source: "selected-feature",
-          paint: {
-            "fill-color": "#088",
-            "fill-opacity": 0.5,
-          },
-          filter: ["==", "$type", "Polygon"], // Only render polygons
-        });
-
-        // Add a layer for points
-        map.addLayer({
-          id: "selected-point-layer",
-          type: "circle",
-          source: "selected-feature",
-          paint: {
-            "circle-color": "#f00",
-            "circle-radius": 6,
-            "circle-opacity": 0.8,
-          },
-          filter: ["==", "$type", "Point"], // Only render points
-        });
+      // Add a layer for polygons
+      map.addLayer({
+        id: "selected-polygon-layer",
+        type: "fill",
+        source: "selected-feature",
+        paint: {
+          "fill-color": "#088",
+          "fill-opacity": 0.5,
+        },
+        filter: ["==", "$type", "Polygon"], // Only render polygons
       });
 
-      fetch("http://localhost/maps/api/getapi.php")
-        .then((response) => response.json())
-        .then((jsonData) => {
-          const tableBody = document.querySelector("#data-table tbody");
-          jsonData.features.forEach((feature) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
+      // Add a layer for points
+      map.addLayer({
+        id: "selected-point-layer",
+        type: "circle",
+        source: "selected-feature",
+        paint: {
+          "circle-color": "#f00",
+          "circle-radius": 6,
+          "circle-opacity": 0.8,
+        },
+        filter: ["==", "$type", "Point"], // Only render points
+      });
+    });
+
+    fetch("http://localhost/maps/api/getapi.php")
+      .then((response) => response.json())
+      .then((jsonData) => {
+        const tableBody = document.querySelector("#data-table tbody");
+        jsonData.features.forEach((feature) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
                     <td>${feature.properties.id}</td>
                     <td>${feature.properties.title}</td>
                     <td>${feature.properties.name}</td>  
                     <td>${feature.properties.address}</td>
-                    <td>${
-                      feature.geometry.type === "Polygon"
-                        ? '<button class="viewButton" onclick="viewPolygon(' +
-                          JSON.stringify(feature.geometry.coordinates) +
-                          ', \'' + feature.properties.title + '\')">View Polygon</button>'
-                        : feature.geometry.type === "Point"
-                        ? '<button class="viewButton" onclick="viewPoint(' +
-                          JSON.stringify(feature.geometry.coordinates) +
-                          ', \'' + feature.properties.name + '\')">View Point</button>'
-                        : ""
-                    }</td>`;
-            tableBody.appendChild(row);
-          });
-        })
-        .catch((error) => console.error("Error fetching data:", error));
+                    <td><button class="viewButton" onClick="displayForm()">Edit</button></td>
+                    <td>${feature.geometry.type === "Polygon"
+              ? '<button class="viewButton" onclick="viewPolygon(' +
+              JSON.stringify(feature.geometry.coordinates) +
+              ', \'' + feature.properties.title + '\')">View Polygon</button>'
+              : feature.geometry.type === "Point"
+                ? '<button class="viewButton" onclick="viewPoint(' +
+                JSON.stringify(feature.geometry.coordinates) +
+                ', \'' + feature.properties.name + '\')">View Point</button>'
+                : ""
+            }</td>`;
 
-      function viewPolygon(coordinates, title) {
-        const geojson = {
-          type: "Feature",
-          geometry: {
-            type: "Polygon",
-            coordinates: coordinates,
-          },
-          properties: {
-            title: title
-          },
-        };
-        map.getSource("selected-feature").setData(geojson);
-        
-        // If popup exists, remove it
-        if (popup) {
-          popup.remove();
-        }
+          tableBody.appendChild(row);
+        });
+      })
+      .catch((error) => console.error("Error fetching data:", error));
 
-        // Create a new popup
-        popup = new mapboxgl.Popup();
-        
-        // Set the HTML content of the popup
-        var form = createForm(title);
-        popup.setLngLat(coordinates[0][0])
-          .setHTML(form.outerHTML) // Use outerHTML to get the HTML content of the form element
-          .addTo(map);
+    function viewPolygon(coordinates, title) {
+      const geojson = {
+        type: "Feature",
+        geometry: {
+          type: "Polygon",
+          coordinates: coordinates,
+        },
+        properties: {
+          title: title
+        },
+      };
+      map.getSource("selected-feature").setData(geojson);
+
+      // If popup exists, remove it
+      if (popup) {
+        popup.remove();
       }
 
-      function viewPoint(coordinates, name) {
-        const geojson = {
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: coordinates,
-          },
-          properties: {
-            name: name
-          },
-        };
-        map.getSource("selected-feature").setData(geojson);
+      // Create a new popup
+      popup = new mapboxgl.Popup();
 
-        // If popup exists, remove it
-        if (popup) {
-          popup.remove();
-        }
+      // Set the HTML content of the popup
+      var form = createForm(title);
+      popup.setLngLat(coordinates[0][0])
+        .setHTML(form.outerHTML) // Use outerHTML to get the HTML content of the form element
+        .addTo(map);
+    }
 
-        // Create a new popup
-        popup = new mapboxgl.Popup();
-        
-        // Set the HTML content of the popup
-        var form = createForm(name);
-        popup.setLngLat(coordinates)
-          .setHTML(form.outerHTML) // Use outerHTML to get the HTML content of the form element
-          .addTo(map);
+    function viewPoint(coordinates, name) {
+      const geojson = {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: coordinates,
+        },
+        properties: {
+          name: name
+        },
+      };
+      map.getSource("selected-feature").setData(geojson);
+
+      // If popup exists, remove it
+      if (popup) {
+        popup.remove();
       }
 
-      function createForm(title) {
-        var form = document.createElement('form');
-        form.innerHTML = `
+      // Create a new popup
+      popup = new mapboxgl.Popup();
+
+      // Set the HTML content of the popup
+      var form = createForm(name);
+      popup.setLngLat(coordinates)
+        .setHTML(form.outerHTML) // Use outerHTML to get the HTML content of the form element
+        .addTo(map);
+    }
+
+    function createForm(title) {
+      var form = document.createElement('form');
+      form.innerHTML = `
           <h3>${title}</h3>
           <label for="status">Status:</label>
           <select id="status">
@@ -223,31 +247,100 @@
             <option value="in_progress">In Progress</option>
             <option value="pending">Pending</option>
           </select>
-          <br>
+          
           <label for="flag">Flag:</label>
           <input type="checkbox" id="flag">
-          <br>
+          
           <button type="button" onclick="submitForm('${title}')">Submit</button>
         `;
-        return form;
+      return form;
+    }
+
+    function submitForm(title) {
+      var status = document.getElementById('status').value;
+      var flag = document.getElementById('flag').checked;
+      console.log("Feature: " + title + ", Status: " + status + ", Flag: " + flag);
+    }
+
+    // Function to update the coordinates display
+    function updateCoordinates(coordinates) {
+      var coordinatesDisplay = document.getElementById('coordinates');
+      coordinatesDisplay.textContent = `Latitude: ${coordinates.latitude.toFixed(6)}, Longitude: ${coordinates.longitude.toFixed(6)}`;
+    }
+
+    // Event listener for when geolocation is successful
+    geolocate.on('geolocate', function (event) {
+      updateCoordinates(event.coords);
+    });
+    function addCoordinate() {
+      var coordinatesContainer = document.getElementById('coordinatesContainer');
+      var container = document.getElementById("coordinatesContainer");
+      container.scrollTop = container.scrollHeight;
+      // Create a new div to hold latitude and longitude inputs
+      var coordinateDiv = document.createElement('div');
+      coordinateDiv.classList.add('input-field');
+
+      // Create input fields for latitude and longitude
+      var latitudeInput = document.createElement('input');
+      latitudeInput.type = 'text';
+      latitudeInput.name = 'latitude';
+      latitudeInput.placeholder = 'Latitude';
+
+      var longitudeInput = document.createElement('input');
+      longitudeInput.type = 'text';
+      longitudeInput.name = 'longitude';
+      longitudeInput.placeholder = 'Longitude';
+
+      // Create a button to remove this coordinate
+      var removeButton = document.createElement('button');
+      removeButton.textContent = 'Remove';
+      removeButton.type = 'button';
+      removeButton.onclick = function () {
+        coordinatesContainer.removeChild(coordinateDiv);
+      };
+
+      // Append inputs and remove button to the coordinate div
+      coordinateDiv.appendChild(latitudeInput);
+      coordinateDiv.appendChild(document.createTextNode(','));
+      coordinateDiv.appendChild(longitudeInput);
+      coordinateDiv.appendChild(removeButton);
+
+      // Append the coordinate div to the coordinates container
+      coordinatesContainer.appendChild(coordinateDiv);
+    }
+
+    // Function to gather all coordinates and submit the form
+    function submitForm() {
+      var coordinates = [];
+
+      // Get all input fields with name latitude and longitude
+      var latitudeInputs = document.getElementsByName('latitude');
+      var longitudeInputs = document.getElementsByName('longitude');
+
+      // Iterate over the input fields and gather coordinates
+      for (var i = 0; i < latitudeInputs.length; i++) {
+        var latitude = latitudeInputs[i].value.trim();
+        var longitude = longitudeInputs[i].value.trim();
+
+        // Check if latitude and longitude are not empty
+        if (latitude && longitude) {
+          coordinates.push({ latitude: latitude, longitude: longitude });
+        }
       }
 
-      function submitForm(title) {
-        var status = document.getElementById('status').value;
-        var flag = document.getElementById('flag').checked;
-        console.log("Feature: " + title + ", Status: " + status + ", Flag: " + flag);
-      }
+      // Do something with the gathered coordinates, such as sending them to a server
+      console.log('Coordinates:', coordinates);
+    }
 
-      // Function to update the coordinates display
-      function updateCoordinates(coordinates) {
-        var coordinatesDisplay = document.getElementById('coordinates');
-        coordinatesDisplay.textContent = `Latitude: ${coordinates.latitude.toFixed(6)}, Longitude: ${coordinates.longitude.toFixed(6)}`;
-      }
 
-      // Event listener for when geolocation is successful
-      geolocate.on('geolocate', function(event) {
-        updateCoordinates(event.coords);
-      });
-    </script>
-  </body>
+
+    function displayForm() {
+      document.getElementById('latlongForm').style.display = "flex";
+    }
+    function closeForm() {
+      document.getElementById('latlongForm').style.display = 'none'
+    }
+  </script>
+</body>
+
 </html>

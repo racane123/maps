@@ -6,7 +6,7 @@ $requestMethod = $_SERVER['REQUEST_METHOD'];
 switch($requestMethod){
     case 'GET':
         if(isset($_GET['id'])){
-            $sql = "SELECT * FROM `landsurvey` WHERE id=?";
+            $sql = "SELECT title FROM `landsurvey`";
             $result = mysqli_query($conn, $sql);
 
             if($result->num_rows > 0){
